@@ -1,0 +1,195 @@
+
+##Install VCF TOOLS : http://vcftools.sourceforge.net/man_latest.html
+
+ORDER:
+
+1.	MAF (get rid of hetero / missingness
+2.	Missingness
+3.	MAF again – because allele freqs would have changed
+4.	HET (plink) 
+5.	Thin – pop structure genomes. Need to remove linked loci – 
+
+
+
+#set the working directory
+```
+cd /Users/bobbiecattani/Birds
+```
+#MAF FILTER
+/Users/bobbiecattani/Birds/vcftools/bin/vcftools --vcf WPAallMerged.vcf --maf 0.05 --recode --recode-INFO-all --out filter.maf
+
+#missingness
+```
+ /Users/bobbiecattani/Birds/vcftools/bin/vcftools --vcf filter.maf.recode.vcf --max-missing 0.5 --recode --recode-INFO-all --out filter.maxmiss
+/Users/bobbiecattani/Birds/vcftools/bin/vcftools  --vcf filter.maxmiss.recode.vcf --missing-indv
+#creates output called imiss. 
+#to view data
+cat out.imiss
+less out.imiss
+head out.imiss
+tail out.imiss
+```
+#The N_MISS column is the number of sites the individual does not have any data for. The F_MISS column is the frequency of missing data for that individual (N_MISS / TOTAL SITES).
+#now want to find the indivuals with missinginness greater 0.5: then count how many you lose + then remove them. 
+
+```
+awk '$5 > 0.5' out.imiss | cut -f1 > lowDP.indv
+cat lowDP.indv |wc -l
+/users/bobbiecattani/Birds/vcftools/bin/vcftools --vcf filter.maxmiss.recode.vcf --remove lowDP.indv --recode --recode-INFO-all --out filename.final
+```
+#the phe126 showed in the PCA to be grouping with the Mountains but it is (definitely) a Malaysian. -> remove that indivdual
+
+```
+/users/bobbiecattani/Birds/vcftools/bin/vcftools --remove-indv PHE126 --vcf filename.final.recode.vcf --recode --recode-INFO-all --out filename.removed
+```
+#THEN DO MAF again
+```
+/Users/bobbiecattani/Birds/vcftools/bin/vcftools --vcf filename.removed.recode.vcf --maf 0.05 --recode --recode-INFO-all --out maf2
+```
+
+
+#THIN filter
+```
+/users/bobbiecattani/Birds/vcftools/bin/vcftools --vcf maf2.recode.vcf --thin 300 --recode --recode-INFO-all --out thinfilter
+```
+
+#After filtering, kept 63 out of 63 Individuals
+#Outputting VCF file...
+#After filtering, kept 5802 out of a possible 40923 Sites
+
+
+# Now need to separate the Mountain and Malaysian pheasant populations 
+```
+/users/bobbiecattani/Birds/vcftools/bin/vcftools --vcf thinfilter.recode.vcf 
+```
+#Mountain 
+```
+/users/bobbiecattani/Birds/vcftools/bin/vcftools --vcf thinfilter.recode.vcf --indv PHE079 --indv PHE088 --indv PHE089 --indv PHE090 --indv PHE091 --indv PHE092 --indv PHE116 --indv PHE136 --indv PHE138 --indv PHE141 --indv PHE142 --indv PHE143 --indv PHE144 --indv PHE149 --indv PHE150 --indv PHE153 --indv PHE154 --indv PHE155 --indv PHE158 --indv PHE159 --indv PHE161 --indv PHE162 --recode --recode-INFO-all --out mountain
+```
+#kept 22. 
+Malaysian
+```
+#/users/bobbiecattani/Birds/vcftools/bin/vcftools --indv PHE080 --indv PHE081 --indv PHE082 --indv PHE083 --indv PHE084 --indv PHE085 --indv PHE086 --indv PHE087 --indv PHE112 --indv PHE100 --indv PHE126 --indv PHE127 --indv PHE133 --indv PHE134 --indv PHE139 --indv PHE140 --indv PHE145 --indv PHE146 --indv PHE147 --indv PHE148 --indv PHE156 --indv PHE157 --indv PHE160 --vcf thinfilter.recode.vcf --recode --recode-INFO-all --out Malaysian
+```
+#kept 20
+
+
+#Use --freq function in Plink to get allele frequencies.  need to create a plink file first. 
+
+
+
+#Inbreeding calculations
+#need to calculate the number of observed homozygotes for the mountain and malaysian populations. Do this using --het in VCF tools.
+```
+/users/bobbiecattani/Birds/vcftools/bin/vcftools --vcf mountain.recode.vcf --het #this creates an output file with .het extension. 
+```
+#rename this to mountain.out.het
+#Then, repeat for malaysain pheasant pop. 
+```
+/users/bobbiecattani/Birds/vcftools/bin/vcftools --vcf Malaysian.recode.vcf --het. 
+```
+#change the names 
+#use Plink --freq 
+
+``
+/users/bobbiecattani/Birds/vcftools/bin/vcftools --vcf Malaysian.recode.vcf--plink --out MA.data
+/users/bobbiecattani/Birds/vcftools/bin/vcftools --vcf mountain.recode.vcf--plink --out MT.data
+```
+then use plink
+```
+/Users/bobbiecattani/Birds/vcftools/plink --file MA.data --freq --out malaylocus2
+/Users/bobbiecattani/Birds/vcftools/plink --file MT.data --freq --out mountlocus2
+```
+
+########################################.  #Now time to analyse in R 
+
+# install.packages("adegenet")
+# install.packages("hierfstat")
+# #install.packages("pcadapt")
+#library(pcadapt)
+# setwd("~/Documents/Documents - MacBook Air/University/Year Three/Staying Alive/Practical Project/Rproject")
+
+###########################################################################
+#MALAYSIAN PHEASANTS
+```
+MALAYTABLE= read.table("malay.out.het", header=TRUE)  #read in data from VCF tools output
+```
+#Malay FH
+```
+malayFplink = data.frame(MALAYTABLE$F)
+is.data.frame(malayFplink)
+malayFHmean = sum(malayFplink)/20
+malaymeanvarFH =var(malayFplink)
+```
+#expected hom is much higher than what you get, so higher het than you'd expect(4* as much)
+
+#Malay FIS
+```
+malayOHOMratio = as.data.frame((MALAYTABLE$O.HOM)/MALAYTABLE$N_SITES)
+malayEHOMratio= as.data.frame((MALAYTABLE$E.HOM.)/MALAYTABLE$N_SITES)
+MALAYOHETratio= 1- malayOHOMratio
+MALAYEHETratio= 1 - malayEHOMratio
+Fismalay = 1-(MALAYOHETratio / MALAYEHETratio)
+malay.mean.Fis=sum(Fismalay)/20
+varfismalay = var(Fismalay)
+Malaydata = as.data.frame(c(malayFplink, Fismalay2))
+```
+###########################################################################
+
+#MOUNTAIN PHEASANTS  FH
+```
+mounttable = read.table("mount.out.het", header=TRUE) #read in VCF het output as a table)
+mountFplink = data.frame(mounttable$F)
+mountFHmean = sum(mountFplink)/20
+mountmeanvarFH =var(mountFplink)
+```
+#Mount FIS
+```
+MTOHOMratio = as.data.frame((mounttable$O.HOM)/mounttable$N_SITES)
+MTEHOMratio= as.data.frame((mounttable$E.HOM.)/mounttable$N_SITES)
+MTOHETratio= 1- MTOHOMratio
+MTEHETratio= 1 - MTEHOMratio
+FisMT = 1-(MTOHETratio / MTEHETratio)
+MT.mean.fis = sum(FisMT)/22
+varfisMT = var(FisMT)
+MTdata =as.data.frame(c(mountFplink, FisMT))
+```
+
+###########################################################################
+
+#plot everything. - box plot in pannels for FH + FIS for both
+```
+Fhpheplot = c(malayFplink, mountFplink)
+fispheplot = c(Fismalay2, FisMT)
+par(mfrow=c(1, 2))
+boxplot(Fhpheplot, ylab="Fh", xaxt="n", col=c("ivory", "gray98"))
+axis(1, at=1:2, labels=c("Malaysian", "Mountain"))
+boxplot(fispheplot , ylab="Fis (Fixation index)", xaxt="n", col=c("ivory", "gray98"))
+axis(1, at=1:2, labels=c("Malaysian", "Mountain"))
+```
+###########################################################################
+
+#FST
+```
+malaylocus = read.csv("/Users/bobbiecattani/Documents/Documents - MacBook Air/University/Year Three/Staying Alive/Practical Project/malaylocus2.csv", header=TRUE)
+mountlocus=read.csv("/Users/bobbiecattani/Documents/Documents - MacBook Air/University/Year Three/Staying Alive/Practical Project/mountlocus2.csv", header=TRUE)
+```
+#allele frequencies
+```
+malayfreq.1 = as.data.frame(malaylocus$X.FREQ.)
+malayfreq.0 = as.data.frame(malaylocus$X)
+mountfreq.1 =as.data.frame(mountlocus$X.FREQ.)
+mountfreq.0 =as.data.frame(mountlocus$X)
+```
+#to calcualte FSt, first need HT which is total, pair each separate allele from the diff pops together (e.g. allele 1+ allele1), square them and then add the two squares
+```
+allele1 =(mountfreq.1[1:5386,] + malayfreq.1)^2
+allele0 = (mountfreq.0[1:5386,] + malayfreq.0)^2
+HT=1-(sum(allele1+ allele0))
+pop1=(mountfreq.1)^2 + (mountfreq.0)^2
+pop2 =(malayfreq.1)^2 + (malayfreq.0)^2
+HS = 1 - sum(pop1[1:5386,]+pop2)
+FST = 1-HS/HT
+```
+#   We don't need two divide HT and HS by the number of populations because  this number is going to be removed in the in the FST formula.
+
