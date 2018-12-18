@@ -1,21 +1,39 @@
+#Using version 3.5.1 (2018-07-02); nickname       Feather Spray   
+ R Core Team (2018). R: A language and environment for statistical computing. R Foundation for Statistical Computing,
+  Vienna, Austria. URL https://www.R-project.org/.
 
-# Packages ----------------------------------------------------------------
-# First, install + load libraries:
-library(locfit)
-library(car)
 
-#library(scrm)
-#library(stringr)
+
+# Packages and References ----------------------------------------------------------------
+# First, install + load libraries: (install.packages("") and library())
 #library(locfit)
+        #  Catherine Loader (2013). locfit: Local Regression, Likelihood and Density Estimation.. R package version 1.5-9.1. https://CRAN.R-project.org/package=locfit
+#library(car)
+       #  John Fox and Sanford Weisberg (2011). An {R} Companion to Applied Regression, Second Edition. Thousand Oaks CA: Sage.
+     #URL: http://socserv.socsci.mcmaster.ca/jfox/Books/Companion
+#library(scrm)
+       # Paul R. Staab, Sha Zhu, Dirk Metzler, Gerton Lunter (2015). “scrm: efficiently simulating long sequences using the approximated coalescent with recombination.” _Bioinformatics_, *31*(10), 1680-1682. <URL:
+       #  http://bioinformatics.oxfordjournals.org/content/31/10/1680>.
+
+#library(stringr)
+       #Hadley Wickham (2018). stringr: Simple, Consistent Wrappers for Common String Operations. R package version 1.3.1.
+       #https://CRAN.R-project.org/package=stringr
 #library(Rfast)
+        # Manos Papadakis, Michail Tsagris, Marios Dimitriadis, Stefanos Fafalios, Ioannis Tsamardinos, Matteo Fasiolo, Giorgos Borboudakis, John Burkardt, Changliang Zou, Kleanthi Lakiotaki and Christina Chatzipantsiou. (2018). Rfast: A Collection of Efficient and Extremely Fast R Functions. R package version 1.9.2. https://CRAN.R-project.org/package=Rfast
 #library(dplyr)
-#library(Rfast)
-#install.packages("FSA")
-#install.packages("gridExtra")
+       # Hadley Wickham, Romain François, Lionel Henry and Kirill Müller (2018). dplyr: A Grammar of Data Manipulation. R package version 0.7.8. https://CRAN.R-project.org/package=dplyr
 # library(gridExtra)
+        # Baptiste Auguie (2017). gridExtra: Miscellaneous Functions for "Grid" Graphics. R package version 2.3.
+        # https://CRAN.R-project.org/package=gridExtra
 # library(FSA)
+        # Ogle, D.H., P. Wheeler, and A. Dinno. 2018. FSA: Fisheries Stock Analysis. R package version 0.8.22,
+        # https://github.com/droglenc/FSA.
 # library(ggpubr)
+       #Alboukadel Kassambara (2018). ggpubr: 'ggplot2' Based Publication Ready Plots. R package version 0.2.
+      #https://CRAN.R-project.org/package=ggpubr
+
 # library(ggplot2)
+        #H. Wickham. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York, 2016.
 
 # Parameters --------------------------------------------------------------
 T1=50/(4*(N0)) #time at bottleneck: either 50 or 150 !!!!
@@ -35,6 +53,7 @@ p=N1/N2 #pop proportion at bottleneck (bottleneck/ancestral pop)
 recom = (4*N0*0.03)  
 
 # SCRM loop ---------------------------------------------------------------
+
 
 Fh = matrix(ncol = nrep,nrow=nhap/2) #make columns for each iteration, with the number of rows = nbr of inividuals
 #Fh calculated with only minor allele frequency (see Keller et al.)
@@ -111,8 +130,7 @@ fh150means.5= colMeans(fh150.5)
 
 
 # PLOTTING + ANALYSIS -----------------------------------------------------
-fhmeansgen1 = c(mean(Fhmeans.5),mean(Fhmeans.10), mean(Fhmeans.25), mean(Fhmeans.50), mean(Fhmeans.100), mean(Fhmeans.250), mean(Fhmeans.500))
-fhmeansgen2 = c(mean(fh150means.5), mean(fh150means.10), mean(fh150means.50), mean(fh150means.100), mean(fh150means.250), mean(fh150means.500))
+
 # Means of FH -------------------------------------------------------------
 #plot FH for 50 generations.
 fit.5 = locfit(~Fhmeans.5, alpha=0.9)
@@ -177,8 +195,8 @@ legend(0.27, 5, legend=c("5", "10", "25", "50", "100", "250", "500"), col=colour
 
 
 #Plot Fh boxplot for 50 gen and 150 gen so it shows all the range of values. 
-fhmeans1box = list(Fhmeans.5, Fhmeans.10, Fhmeans.25, Fhmeans.50, Fhmeans.100, Fhmeans.250, Fhmeans.500)
-fhmeansgen2box = list(fh150means.5, fh150means.10, fh150means.50, fh150means.100, fh150means.250, fh150means.500)
+fhmeans1box = c(Fhmeans.5, Fhmeans.10, Fhmeans.25, Fhmeans.50, Fhmeans.100, Fhmeans.250, Fhmeans.500)
+fhmeansgen2box = c(fh150means.5, fh150means.10, fh150means.25, fh150means.50, fh150means.100, fh150means.250, fh150means.500)
 par(mfrow=c(1,2))
 boxplot(fhmeans1box, ylim= c(0.3, 1), xaxt = "n", xlab='Founder size', ylab="Mean Fh over 50 generations")
 axis(1, at=1:7, labels=c("5","10","25","50","100", "250", "500"))
@@ -188,7 +206,13 @@ axis(1, at=1:7, labels=c("5","10","25","50","100", "250", "500"))
 
 par(mfrow=c(1,1))  #reset the graphs 
 
-
+hist(barplot1)
+barplot1 = as.matrix(c(fhmeansgen1, fhmeansgen2))
+z=list(5, 10, 25, 50, 100, 250, 500)
+fhmeansgen1 = c(mean(Fhmeans.5),mean(Fhmeans.10), mean(Fhmeans.25), mean(Fhmeans.50), mean(Fhmeans.100), mean(Fhmeans.250), mean(Fhmeans.500))
+fhmeansgen2 = c(mean(fh150means.5), mean(fh150means.10), mean(fh150means.25), mean(fh150means.50), mean(fh150means.100), mean(fh150means.250), mean(fh150means.500))
+fhvargen1 = as.matrix(c(sd(Fhmeans.5),sd(Fhmeans.10), sd(Fhmeans.25), sd(Fhmeans.50), sd(Fhmeans.100), sd(Fhmeans.250), sd(Fhmeans.500)))
+fhvargen2 = as.matrix(c(sd(fh150means.5), sd(fh150means.10), sd(fh150means.25), sd(fh150means.50), sd(fh150means.100), sd(fh150means.250), sd(fh150means.500)))
 
 
 # Analysis ----------------------------------------------------------------
@@ -272,5 +296,6 @@ t.factor500 = as.factor(c(rep(1,1000), rep(2,1000)))
 ttest500 = data.frame(yfh500, t.factor500)
 wilcox.test(yfh500~t.factor500)
 #W = 706380, p-value < 2.2e-16
+
 
 
