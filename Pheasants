@@ -102,29 +102,24 @@ then use plink
 ```
 
 ########################################.  #Now time to analyse in R 
+setwd("~/Documents/Documents - MacBook Air/University/Year Three/Staying Alive/Practical Project/Rproject")
 
-# install.packages("adegenet")
-# install.packages("hierfstat")
-# #install.packages("pcadapt")
-#library(pcadapt)
-# setwd("~/Documents/Documents - MacBook Air/University/Year Three/Staying Alive/Practical Project/Rproject")
-
-###########################################################################
+# Malaysian ##########################################################################
 #MALAYSIAN PHEASANTS
-```
 MALAYTABLE= read.table("malay.out.het", header=TRUE)  #read in data from VCF tools output
-```
 #Malay FH
-```
 malayFplink = data.frame(MALAYTABLE$F)
 is.data.frame(malayFplink)
 malayFHmean = sum(malayFplink)/20
-malaymeanvarFH =var(malayFplink)
-```
+malaymeanvarFH =sd(malayFplink)
+sqrt(malaymeanvarFH)
+
+#mean Malay Fh = 0.083398 + 
+
+
 #expected hom is much higher than what you get, so higher het than you'd expect(4* as much)
 
-#Malay FIS
-```
+#malay FIS
 malayOHOMratio = as.data.frame((MALAYTABLE$O.HOM)/MALAYTABLE$N_SITES)
 malayEHOMratio= as.data.frame((MALAYTABLE$E.HOM.)/MALAYTABLE$N_SITES)
 MALAYOHETratio= 1- malayOHOMratio
@@ -133,18 +128,15 @@ Fismalay = 1-(MALAYOHETratio / MALAYEHETratio)
 malay.mean.Fis=sum(Fismalay)/20
 varfismalay = var(Fismalay)
 Malaydata = as.data.frame(c(malayFplink, Fismalay2))
-```
-###########################################################################
+
+#Mountain ###########################################################################
 
 #MOUNTAIN PHEASANTS  FH
-```
 mounttable = read.table("mount.out.het", header=TRUE) #read in VCF het output as a table)
 mountFplink = data.frame(mounttable$F)
 mountFHmean = sum(mountFplink)/20
 mountmeanvarFH =var(mountFplink)
-```
 #Mount FIS
-```
 MTOHOMratio = as.data.frame((mounttable$O.HOM)/mounttable$N_SITES)
 MTEHOMratio= as.data.frame((mounttable$E.HOM.)/mounttable$N_SITES)
 MTOHETratio= 1- MTOHOMratio
@@ -153,36 +145,30 @@ FisMT = 1-(MTOHETratio / MTEHETratio)
 MT.mean.fis = sum(FisMT)/22
 varfisMT = var(FisMT)
 MTdata =as.data.frame(c(mountFplink, FisMT))
-```
 
-###########################################################################
+
+# PLOTS ###########################################################################
 
 #plot everything. - box plot in pannels for FH + FIS for both
-```
 Fhpheplot = c(malayFplink, mountFplink)
 fispheplot = c(Fismalay2, FisMT)
 par(mfrow=c(1, 2))
-boxplot(Fhpheplot, ylab="Fh", xaxt="n", col=c("ivory", "gray98"))
-axis(1, at=1:2, labels=c("Malaysian", "Mountain"))
-boxplot(fispheplot , ylab="Fis (Fixation index)", xaxt="n", col=c("ivory", "gray98"))
-axis(1, at=1:2, labels=c("Malaysian", "Mountain"))
-```
-###########################################################################
+boxplot(Fhpheplot, ylab="Fh", xaxt="n", col=c("ivory", "gray98"), cex.axis=1.3, cex.lab = 1.4)
+axis(1, at=1:2, labels=c("Malaysian", "Mountain"),  cex.axis= 1.5)
+boxplot(fispheplot , ylab="Fis (Fixation index)", xaxt="n", col=c("ivory", "gray98"),  cex.axis=1.3, cex.lab = 1.4)
+axis(1, at=1:2, labels=c("Malaysian", "Mountain"), cex.axis=1.5)
+
+#FST ##########################################################################
 
 #FST
-```
 malaylocus = read.csv("/Users/bobbiecattani/Documents/Documents - MacBook Air/University/Year Three/Staying Alive/Practical Project/malaylocus2.csv", header=TRUE)
 mountlocus=read.csv("/Users/bobbiecattani/Documents/Documents - MacBook Air/University/Year Three/Staying Alive/Practical Project/mountlocus2.csv", header=TRUE)
-```
 #allele frequencies
-```
 malayfreq.1 = as.data.frame(malaylocus$X.FREQ.)
 malayfreq.0 = as.data.frame(malaylocus$X)
 mountfreq.1 =as.data.frame(mountlocus$X.FREQ.)
 mountfreq.0 =as.data.frame(mountlocus$X)
-```
 #to calcualte FSt, first need HT which is total, pair each separate allele from the diff pops together (e.g. allele 1+ allele1), square them and then add the two squares
-```
 allele1 =(mountfreq.1[1:5386,] + malayfreq.1)^2
 allele0 = (mountfreq.0[1:5386,] + malayfreq.0)^2
 HT=1-(sum(allele1+ allele0))
@@ -190,6 +176,8 @@ pop1=(mountfreq.1)^2 + (mountfreq.0)^2
 pop2 =(malayfreq.1)^2 + (malayfreq.0)^2
 HS = 1 - sum(pop1[1:5386,]+pop2)
 FST = 1-HS/HT
-```
 #   We don't need two divide HT and HS by the number of populations because  this number is going to be removed in the in the FST formula.
+
+
+
 
