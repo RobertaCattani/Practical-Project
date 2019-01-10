@@ -149,14 +149,14 @@ MTdata =as.data.frame(c(mountFplink, FisMT))
 
 # PLOTS ###########################################################################
 
-#plot everything. - box plot in pannels for FH + FIS for both
+#plot everything. 
 Fhpheplot = c(malayFplink, mountFplink)
 fispheplot = c(Fismalay2, FisMT)
-par(mfrow=c(1, 2))
-boxplot(Fhpheplot, ylab="Fh", xaxt="n", col=c("ivory", "gray98"), cex.axis=1.3, cex.lab = 1.4)
-axis(1, at=1:2, labels=c("Malaysian", "Mountain"),  cex.axis= 1.5)
-boxplot(fispheplot , ylab="Fis (Fixation index)", xaxt="n", col=c("ivory", "gray98"),  cex.axis=1.3, cex.lab = 1.4)
-axis(1, at=1:2, labels=c("Malaysian", "Mountain"), cex.axis=1.5)
+allp = c(Fhpheplot, fispheplot)
+par(mfrow=c(1, 1))
+boxplot(allp, xaxt="n", col=c("lightsteelblue1", "lightsteelblue1", "gray78", "gray78"),  cex.axis=1.2, cex.lab = 1.5)
+#legend(-0.1, legend=c("Fh", "Fis"), col=c("lightsteelblue1","gray78"),  horiz=TRUE, bty="n", cex=1.3, pch=20)
+axis(1, at=1:4, labels=c("Malaysian", "Mountain", "Malaysian", "Mountain"), cex.axis=1.5)
 
 #FST ##########################################################################
 
